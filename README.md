@@ -4,7 +4,7 @@ A **Retrieval-Augmented Generation (RAG)** based Document Question Answering sys
 
 The system extracts text from uploaded files, converts it into embeddings, retrieves relevant context using semantic search, and generates accurate answers using the **FLAN-T5 language model**.
 
----
+
 
 ## 🚀 Features
 
@@ -17,7 +17,7 @@ The system extracts text from uploaded files, converts it into embeddings, retri
 - 🐳 Fully Dockerized backend
 - 📦 REST APIs built with FastAPI
 
----
+
 
 ## 🧠 Architecture Overview
 
@@ -32,7 +32,7 @@ The system extracts text from uploaded files, converts it into embeddings, retri
 4. **Answer Generation**
    - FLAN-T5 generates answers using retrieved context
 
----
+
 
 ## 🛠 Tech Stack
 
@@ -50,7 +50,7 @@ The system extracts text from uploaded files, converts it into embeddings, retri
 - HTML / CSS
 - Fetch API
 
----
+
 
 ## 📂 Project Structure
 

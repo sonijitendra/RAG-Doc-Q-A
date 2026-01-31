@@ -9,16 +9,14 @@ export default function App() {
   const [loading, setLoading] = useState(false);
   const [status, setStatus] = useState("");
 
-  // Reset everything
+  const BACKEND_URL = "https://rag-doc-q-a.onrender.com";
+
+  // 🔹 HARD RESET (prevents backend context mixing)
   const resetAll = () => {
-    setFile(null);
-    setUploaded(false);
-    setQuestion("");
-    setAnswer("");
-    setStatus("");
+    window.location.reload();
   };
 
-  // Upload file
+  // 🔹 Upload file
   const uploadFile = async () => {
     if (!file) return;
 
@@ -29,29 +27,31 @@ export default function App() {
     formData.append("file", file);
 
     try {
-      const res = await fetch("http://127.0.0.1:8000/files/upload", {
+      const res = await fetch(`${BACKEND_URL}/files/upload`, {
         method: "POST",
         body: formData,
       });
 
       if (!res.ok) {
-        throw new Error(`Upload failed with status ${res.status}`);
+        throw new Error(`Upload failed: ${res.status}`);
       }
 
-      const data = await res.json();
-      console.log("Upload response:", data);
+      // backend may or may not return JSON
+      try {
+        await res.json();
+      } catch (_) {}
 
       setUploaded(true);
       setStatus("Uploaded ✓");
     } catch (err) {
       console.error(err);
       setStatus("Upload failed");
+    } finally {
+      setLoading(false);
     }
-
-    setLoading(false);
   };
 
-  // Ask question
+  // 🔹 Ask question (with timeout safety)
   const askQuestion = async () => {
     if (!uploaded || !question.trim()) return;
 
@@ -59,19 +59,21 @@ export default function App() {
     setStatus("Thinking...");
     setAnswer("");
 
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 60000); // 60s timeout
+
     try {
-      const res = await fetch("http://127.0.0.1:8000/chat/ask", {
+      const res = await fetch(`${BACKEND_URL}/chat/ask`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify({
-          question: question,
-        }),
+        body: JSON.stringify({ question }),
+        signal: controller.signal,
       });
 
       if (!res.ok) {
-        throw new Error(`Ask failed with status ${res.status}`);
+        throw new Error(`Ask failed: ${res.status}`);
       }
 
       const data = await res.json();
@@ -79,10 +81,15 @@ export default function App() {
       setStatus("");
     } catch (err) {
       console.error(err);
-      setStatus("Failed to get answer");
+      setStatus(
+        err.name === "AbortError"
+          ? "Request timed out"
+          : "Failed to get answer"
+      );
+    } finally {
+      clearTimeout(timeoutId);
+      setLoading(false);
     }
-
-    setLoading(false);
   };
 
   return (
@@ -103,7 +110,7 @@ export default function App() {
         {/* Reset */}
         {file && (
           <button className="secondary" onClick={resetAll}>
-            Deselect File
+            Reset
           </button>
         )}
 
