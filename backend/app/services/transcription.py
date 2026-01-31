@@ -7,9 +7,13 @@ model = WhisperModel(
     compute_type="int8"
 )
 
-def transcribe_audio(file_path: str) -> str:
-    if not os.path.exists(file_path):
-        return ""
+# def transcribe_audio(file_path: str) -> str:
+#     if not os.path.exists(file_path):
+#         return ""
+
+def transcribe_audio(file_path: str):
+    raise RuntimeError("Audio transcription disabled on deployment")
+
 
     segments, _ = model.transcribe(file_path)
     text = " ".join(seg.text for seg in segments)
