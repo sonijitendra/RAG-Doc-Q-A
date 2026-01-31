@@ -1,15 +1,16 @@
-import whisper
-import tempfile
+from faster_whisper import WhisperModel
 import os
 
-_model = whisper.load_model("base")
+model = WhisperModel(
+    "tiny",
+    device="cpu",
+    compute_type="int8"
+)
 
-def transcribe(file_bytes: bytes) -> str:
-    with tempfile.NamedTemporaryFile(delete=False, suffix=".media") as tmp:
-        tmp.write(file_bytes)
-        temp_path = tmp.name
+def transcribe_audio(file_path: str) -> str:
+    if not os.path.exists(file_path):
+        return ""
 
-    result = _model.transcribe(temp_path)
-    os.remove(temp_path)
-
-    return result["text"]
+    segments, _ = model.transcribe(file_path)
+    text = " ".join(seg.text for seg in segments)
+    return text.strip()

@@ -2,15 +2,11 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from app.routes import upload, chat
 
-app = FastAPI(
-    title="RAG Doc QnA",
-    version="0.1.0"
-)
+app = FastAPI()
 
-#  CORS FIX (THIS WAS MISSING)
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],   # frontend access
+    allow_origins=["*"],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],

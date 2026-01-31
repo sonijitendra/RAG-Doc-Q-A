@@ -1,4 +1,5 @@
 from transformers import AutoTokenizer, AutoModelForSeq2SeqLM
+from app.services.embeddings import search
 import torch
 
 MODEL_NAME = "google/flan-t5-base"
@@ -6,11 +7,20 @@ MODEL_NAME = "google/flan-t5-base"
 tokenizer = AutoTokenizer.from_pretrained(MODEL_NAME)
 model = AutoModelForSeq2SeqLM.from_pretrained(MODEL_NAME)
 
+def generate_answer(question: str) -> str:
+    # 1. Retrieve relevant chunks
+    chunks = search(question, k=3)
 
-def generate_answer(context: str, question: str) -> str:
+    if not chunks:
+        return "No relevant information found in the document."
+
+    # 2. Build context (LIMIT SIZE)
+    context = "\n".join(chunks)
+    context = context[:1200]  # VERY IMPORTANT
+
+    # 3. Prompt
     prompt = f"""
-Answer the question using ONLY the context below.
-If the answer is not in the context, say "I don't know".
+Answer the question based on the context below.
 
 Context:
 {context}
@@ -19,16 +29,24 @@ Question:
 {question}
 
 Answer:
-""".strip()
+"""
 
-    inputs = tokenizer(prompt, return_tensors="pt", truncation=True)
+    # 4. Tokenize
+    inputs = tokenizer(
+        prompt,
+        return_tensors="pt",
+        truncation=True,
+        max_length=512
+    )
 
+    # 5. Generate
     with torch.no_grad():
-        outputs = model.generate(
+        output = model.generate(
             **inputs,
             max_new_tokens=128,
             do_sample=False
         )
 
-    answer = tokenizer.decode(outputs[0], skip_special_tokens=True)
+    # 6. Decode
+    answer = tokenizer.decode(output[0], skip_special_tokens=True)
     return answer.strip()

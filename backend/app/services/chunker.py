@@ -1,25 +1,11 @@
-def chunk_text(text: str):
-    lines = [l.strip() for l in text.split("\n") if l.strip()]
-
+def chunk_text(text: str, size: int = 400, overlap: int = 50):
+    words = text.split()
     chunks = []
-    current = []
 
-    for line in lines:
-        # force section-based chunking
-        if line.lower().startswith((
-            "education",
-            "experience",
-            "projects",
-            "certifications",
-            "skills"
-        )):
-            if current:
-                chunks.append(" ".join(current))
-                current = []
-
-        current.append(line)
-
-    if current:
-        chunks.append(" ".join(current))
+    i = 0
+    while i < len(words):
+        chunk = words[i : i + size]
+        chunks.append(" ".join(chunk))
+        i += size - overlap
 
     return chunks
