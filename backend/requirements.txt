@@ -1,0 +1,13 @@
+fastapi
+uvicorn
+python-multipart
+PyPDF2
+
+sentence-transformers
+faiss-cpu
+
+transformers
+torch
+
+openai-whisper
+ffmpeg-python

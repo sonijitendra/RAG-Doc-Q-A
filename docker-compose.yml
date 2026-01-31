@@ -1,0 +1,10 @@
+services:
+  backend:
+    build: .
+    container_name: rag-doc-qna-backend
+    ports:
+      - "8000:8000"
+    volumes:
+      - ./uploads:/app/uploads
+    environment:
+      - PYTHONPATH=/app
