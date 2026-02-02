@@ -9,7 +9,7 @@ export default function App() {
   const [loading, setLoading] = useState(false);
   const [status, setStatus] = useState("");
 
-  const BACKEND_URL = "https://rag-docs.onrender.com";
+  const BACKEND_URL = "https://rag-docs.onrender.com/doc";
 
   // 🔹 HARD RESET (prevents backend context mixing)
   const resetAll = () => {
