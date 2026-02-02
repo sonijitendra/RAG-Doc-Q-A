@@ -4,8 +4,7 @@ python-multipart
 PyPDF2
 sentence-transformers
 faiss-cpu
-transformers
-torch
-faster-whisper
+
 ffmpeg-python
 pytest
+groq

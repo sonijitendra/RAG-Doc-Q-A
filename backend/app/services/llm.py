@@ -1,26 +1,20 @@
-from transformers import AutoTokenizer, AutoModelForSeq2SeqLM
+import os
+from groq import Groq
 from app.services.embeddings import search
-import torch
 
-MODEL_NAME = "google/flan-t5-base"
-
-tokenizer = AutoTokenizer.from_pretrained(MODEL_NAME)
-model = AutoModelForSeq2SeqLM.from_pretrained(MODEL_NAME)
+client = Groq(api_key=os.getenv("GROQ_API_KEY"))
 
 def generate_answer(question: str) -> str:
-    # 1. Retrieve relevant chunks
     chunks = search(question, k=3)
 
     if not chunks:
-        return "No relevant information found in the document."
+        return "I don't know"
 
-    # 2. Build context (LIMIT SIZE)
-    context = "\n".join(chunks)
-    context = context[:1200]  # VERY IMPORTANT
+    context = "\n\n".join(chunks)
 
-    # 3. Prompt
     prompt = f"""
-Answer the question based on the context below.
+Answer the question using ONLY the context below.
+If the answer is not in the context, say "I don't know".
 
 Context:
 {context}
@@ -31,22 +25,11 @@ Question:
 Answer:
 """
 
-    # 4. Tokenize
-    inputs = tokenizer(
-        prompt,
-        return_tensors="pt",
-        truncation=True,
-        max_length=512
+    response = client.chat.completions.create(
+        model="llama-3.1-8b-instant",
+        messages=[{"role": "user", "content": prompt}],
+        temperature=0.2,
+        max_tokens=300,
     )
 
-    # 5. Generate
-    with torch.no_grad():
-        output = model.generate(
-            **inputs,
-            max_new_tokens=128,
-            do_sample=False
-        )
-
-    # 6. Decode
-    answer = tokenizer.decode(output[0], skip_special_tokens=True)
-    return answer.strip()
+    return response.choices[0].message.content.strip()
